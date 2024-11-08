@@ -1,0 +1,31 @@
+Youtube: https://youtu.be/IEIjnww6vZA?si=4WooITP1UEuvTAvM
+Github: https://github.com/jaiswaladi246/webshop-app
+
+Flow:
+  Github -> Code scanning -> Sonarqube -> Deploy
+
+Pre-requisite:
+  # run the container for the repective application and expose the port...
+  - Sonarqube application:
+      docker run -d -p 9000:9000 --name sonarqube sonarqube:lts-community
+  # install following packages on jenkins server...
+  - clj-homes package:
+      curl -L https://github.com/clj-holmes/clj-holmes/releases/latest/download/clj-holmes-ubuntu-latest -o /tmp/clj-holmes
+      sudo install -m 755 /tmp/clj-holmes /usr/local/bin/clj-holmes && rm /tmp/clj-holmes
+
+Plugins:
+  - jdk [eclipse termurin installer]
+  - sonarqube scanner
+  - docker, docker pipeline, docker build step
+
+Tools version:
+  - Java [jdk17]: 17.0.8.1
+  - SonarQube [sonarqube-scanner]: 5.0.1.3006
+  - Docker [docker]: latest
+
+Create credentials:
+  - For docker (user/password) [docker-cred]
+  - For sonarqube (secret text) [sonarqube-cred]
+
+Extra:
+  - Create sonarqube server configuration. [sonarqube-server]

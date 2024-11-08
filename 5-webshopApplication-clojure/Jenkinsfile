@@ -1,0 +1,50 @@
+// pipeline for webshop-app application...
+pipeline {
+    agent any
+
+    // we need to define the tools as we are using them in the stages...
+    tools {
+        // tool's name
+        jdk 'jdk17'
+    }
+
+    environment {
+        // environment variable required in the stages...
+        SCANNER_HOME= tool 'sonarqube-scanner'
+    }
+
+    stages {
+        // fetch the latest code for the development...
+        stage('Git checkout') {
+            steps {
+                git branch: 'master', url: 'https://github.com/jaiswaladi246/webshop-app'
+            }
+        }
+
+        // scanning using clj-homes package...
+        stage('Cljhomes scanning code') {
+            steps {
+                sh "clj-holmes fetch-rules"
+                sh "clj-holmes scan -p ./"
+            }
+        }
+
+        // code quality check...
+        stage('Sonarqube analysis') {
+            steps {
+                // name of the sonarqube server...
+                withSonarQubeEnv('sonarqube-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=webshop-app \
+                -Dsonar.projectKey=webshop-app '''
+                }
+            }
+        }
+
+        // deploy application
+        stage('Deploy application') {
+            steps {
+                sh "docker-compose up -d"
+            }
+        }
+    }
+}
