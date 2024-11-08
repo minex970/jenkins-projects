@@ -1,0 +1,43 @@
+Youtube:
+  - https://youtu.be/jbEF3mB7UcU?si=WxK--stp32ow0eKB
+  - https://youtu.be/1bnVs-GjpmU?si=eT66rRAMqL9UoJV5
+Github: https://github.com/jaiswaladi246/Ekart
+
+Flow:
+  Github -> Compile -> Sonarqube -> Dependency check -> Trivy FS scan -> Package -> Build archive -> Build image -> Trivy image scan -> Push image -> Deploy
+
+Pre-requisite:
+  # run the container for the repective application and expose the port...
+  - Nexus repository application:
+      docker run -d -p 8081:8081 --name nexus sonatype/nexus3
+      docker container exec nexus cat /nexus-data/admin.password
+      # use the secret for initial admin login 
+  - Sonarqube application:
+      docker run -d -p 9000:9000 --name sonarqube sonarqube:lts-community
+  - Trivy (Install on the jenkins host):
+      follow installation step on the host
+
+Plugins:
+  - jdk [eclipse termurin installer]
+  - sonarqube scanner
+  - owasp dependency check
+  - config file provider (use to provide the config of the Nexus server)
+  - pipeline maven integration
+  - docker, docker pipeline, docker build step
+
+Tools version:
+  - Java [jdk17]: 17.0.8.1
+  - Maven [mvn3]: 3.6.0
+  - DependencyCheck [dp-check]: 6.5.1
+  - SonarQube [sonarqube-scanner]: 5.0.1.3006
+  - Trivy: 0.56.2
+  - Docker [docker]: latest
+
+Create credentials:
+  - For docker (user/password) [docker-cred]
+  - For sonarqube (secret text) [sonarqube-cred]
+  - For nexus (user/password) [nexus-cred]
+
+Extra:
+  - Create sonarqube server configuration. [sonarqube-server]
+  - Create config file & update Nexus server credentials. [maven-global-setting.xml]

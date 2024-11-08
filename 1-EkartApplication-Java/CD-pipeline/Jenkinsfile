@@ -1,0 +1,16 @@
+// CD pipeline for ekart application...
+pipeline {
+    agent any
+
+    stages {
+        stage('Deploy application') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker run -d --name ekart-app -p 8070:8070 minex970/ekart:latest"
+                    }
+                }
+            }
+        }
+    }
+}
