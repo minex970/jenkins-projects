@@ -1,0 +1,32 @@
+Youtube: 
+  - https://youtu.be/2HN4EkVsl7c?si=H883AHagqnC46NfH
+Github: https://github.com/jaiswaladi246/to-do-app/
+
+Flow:
+  Github -> Sonarqube -> Dependency check -> Build image -> Trivy image scan -> Push image -> Deploy
+
+Pre-requisite:
+  # run the container for the repective application and expose the port...
+  - Sonarqube application:
+      docker run -d -p 9000:9000 --name sonarqube sonarqube:lts-community
+  - Trivy (Install on the jenkins host):
+      follow installation step on the host
+
+Plugins:
+  - sonarqube scanner
+  - owasp dependency check
+  - docker, docker pipeline, docker build step
+  - nodejs plugin
+
+Tools version:
+  - SonarQube [sonarqube-scanner]: 4.8.0.2856
+  - DependencyCheck [dp-check]: 6.5.1
+  - Nodejs [node14]: 14.21.1
+  - Trivy: 0.56.2
+
+Create credentials:
+  - For docker (user/password) [docker-cred]
+  - For sonarqube (secret text) [sonarqube-cred]
+
+Extra:
+  - Create sonarqube server configuration. [sonarqube-server]

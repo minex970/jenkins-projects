@@ -1,0 +1,16 @@
+// CD pipeline for todo application...
+pipeline {
+    agent any
+
+    stages {
+        stage('Deploy application') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker run -d --name todo-app -p 4000:4000 minex970/todo:latest"
+                    }
+                }
+            }
+        }
+    }
+}

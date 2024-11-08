@@ -1,0 +1,82 @@
+// CI pipeline for todo application...
+pipeline {
+    agent any
+
+    // we need to define the tools as we are using them in the stages...
+    tools {
+        // tool's name
+        nodejs 'node14'
+    }
+
+    environment {
+        // environment variable required in the stages...
+        SCANNER_HOME= tool 'sonarqube-scanner'
+    }
+
+    stages {
+        // fetch the latest code for the development...
+        stage('Git checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/jaiswaladi246/to-do-app'
+                sh 'cd ./backend && npm install'
+            }
+        }
+
+        // code quality check...
+        stage('Sonarqube analysis') {
+            steps {
+                // name of the sonarqube server...
+                withSonarQubeEnv('sonarqube-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=todo \
+                -Dsonar.projectKey=todo '''
+                }
+            }
+        }
+
+        // security analysis...
+        stage('Dependency check') {
+            steps {
+                dependencyCheck additionalArguments: ' --scan ./' , odcInstallation: 'dp-check' // tool's name
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+
+        // build docker image...
+        stage('Build image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker build -t minex970/todo:latest -f backend/Dockerfile ."
+                    }
+                }
+            }
+        }
+
+        // Scanning image using trivy...
+        stage('Trivy image scanner') {
+            steps {
+                retry(3) {
+                    sh "trivy image minex970/todo:latest"
+                }
+            }
+        }
+
+        // push docker image...
+        stage('Push image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker push minex970/todo:latest"
+                    }
+                }
+            }
+        }
+
+        // trigger CD pipeline...
+        stage('Trigger CD pipeline') {
+            steps {
+                build job: "Todo-CD-pipeline"
+            }
+        }
+    }
+}
