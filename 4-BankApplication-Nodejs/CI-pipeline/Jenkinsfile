@@ -1,0 +1,65 @@
+// CI pipeline for bank application...
+pipeline {
+    agent any
+
+    // we need to define the tools as we are using them in the stages...
+    tools {
+        // tool's name
+        nodejs 'node16'
+        jdk 'jdk17'
+    }
+
+    environment {
+        // environment variable required in the stages...
+        SCANNER_HOME= tool 'sonarqube-scanner'
+    }
+
+    stages {
+        stage('Git checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/jaiswaladi246/fullstack-bank.git'
+            }
+        }
+
+        // code quality check...
+        stage('Sonarqube analysis') {
+            steps {
+                // name of the sonarqube server...
+                withSonarQubeEnv('sonarqube-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=bank \
+                -Dsonar.projectKey=bank '''
+                }
+            }
+        }
+
+        // security analysis...
+        stage('Dependency check') {
+            steps {
+                dependencyCheck additionalArguments: ' --scan ./' , odcInstallation: 'dp-check' // tool's name
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+
+        // scanning filesystem using trivy...
+        stage('Trivy filesystem scanner') {
+            steps {
+                sh 'trivy fs .'
+            }
+        }
+
+        // install dependencies...
+        stage('Install package dependencies') {
+            steps {
+                sh "npm install"
+                sh "npm postinstall"
+            }
+        }
+
+        // trigger CD pipeline...
+        stage('Trigger CD pipeline') {
+            steps {
+                build job: "Bank-CD-pipeline", wait: true
+            }
+        }
+    }
+}

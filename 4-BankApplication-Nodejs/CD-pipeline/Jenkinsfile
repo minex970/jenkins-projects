@@ -1,0 +1,21 @@
+// CD pipeline for bank application...
+pipeline {
+    agent any
+
+    // we need to define the tools as we are using them in the stages...
+    tools {
+        // tool's name
+        nodejs 'node16'
+    }
+
+    stages {
+        stage('Deploy application') {
+            steps {
+                dir('/var/lib/jenkins/workspace/Bank-CI-pipeline') {
+                    sh "npm run compose:down &> /dev/null"
+                    sh "npm run compose:up -d"
+                }
+            }
+        }
+    }
+}

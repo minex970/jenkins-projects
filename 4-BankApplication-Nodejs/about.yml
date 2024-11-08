@@ -1,0 +1,35 @@
+Youtube: 
+  - https://youtu.be/DIl2VcqZVdY?si=N1TNI9waTVSWkSFJ
+Github: https://github.com/jaiswaladi246/fullstack-bank
+
+Flow:
+  Github -> Sonarqube -> Dependency check -> Trivy FS scan -> Node(NPM) -> Deploy
+
+Pre-requisite:
+  # run the container for the repective application and expose the port...
+  - Sonarqube application:
+      docker run -d -p 9000:9000 --name sonarqube sonarqube:lts-community
+  - Trivy (Install on the jenkins host):
+      follow installation step on the host
+
+Plugins:
+  - jdk [eclipse termurin installer]
+  - sonarqube scanner
+  - owasp dependency check
+  - docker, docker pipeline, docker build step
+  - nodejs plugin
+
+Tools name & version:
+  - Java [jdk17]: 17.0.8.1
+  - DependencyCheck [dp-check]: 6.5.1
+  - SonarQube [sonarqube-scanner]: 5.0.1.3006
+  - Trivy: 0.56.2
+  - Docker [docker]: latest
+  - Nodejs [node16]: 16.20.2
+
+Create credentials:
+  - For docker (user/password) [docker-cred]
+  - For sonarqube (secret text) [sonarqube-cred]
+
+Extra:
+  - Create sonarqube server configuration. [sonarqube-server]
