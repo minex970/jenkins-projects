@@ -1,0 +1,21 @@
+// CD pipeline for monitoring application...
+pipeline {
+    agent any
+
+    environment {
+        // environment variable required in the stages...
+        DOCKER_IMAGE_NAME='minex970/monitoring'
+    }
+
+    stages {
+        stage('Deploy application') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker run -d --name monitoring-app -p 5000:5000 ${DOCKER_IMAGE_NAME}:latest"
+                    }
+                }
+            }
+        }
+    }
+}
